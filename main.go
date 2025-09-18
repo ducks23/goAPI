@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"
@@ -19,8 +20,10 @@ type Product struct {
 
 func main() {
 	dbVar := os.Getenv("NUC_DB")
+	fmt.Println("hello owrld")
+	fmt.Println(dbVar)
 
-	db, err := gorm.Open(mysql.Open(dbVar), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dbVar), &gorm.Config{})
 
 	// Migrate the schema
 	db.AutoMigrate(&Product{})
