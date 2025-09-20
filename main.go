@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"myapp/handlers"
+	"myapp/models"
 	"net/http"
 	"os"
 
@@ -12,32 +13,30 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
-}
-
 func main() {
 	dbVar := os.Getenv("NUC_DB")
-	fmt.Println("hello owrld")
-	fmt.Println(dbVar)
+	e := echo.New()
 
 	db, err := gorm.Open(postgres.Open(dbVar), &gorm.Config{})
-
-	// Migrate the schema
-	db.AutoMigrate(&Product{})
-
-	// Create
-	db.Create(&Product{Code: "D42", Price: 100})
-
 	if err != nil {
 		panic("failed to connect database")
 	}
 
-	e := echo.New()
+	// Migrate the schema
+	db.AutoMigrate(&models.User{})
+
+	dbHandler := handlers.NewDBHandler(db)
+
+	// Middleware
 	e.Use(middleware.Logger())
+
+	// Routes
 	e.GET("/", hello)
+	e.POST("/users", dbHandler.CreateUser)
+	e.GET("/users/:id", dbHandler.GetUser)
+	e.GET("/users", dbHandler.GetAllUsers)
+	e.PUT("/users/:id", dbHandler.UpdateUser)
+	e.DELETE("/users/:id", dbHandler.DeleteUser)
 	e.Logger.Fatal(e.Start(":3000"))
 }
 
